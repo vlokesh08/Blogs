@@ -1,0 +1,29 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  currentSlug?: string;
+}
+
+const { currentSlug } = Astro.props;
+const posts = await getCollection('blog');
+const recentPosts = posts
+  .filter(post => post.slug !== currentSlug)
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 5);
+---
+
+<ul class="space-y-4">
+  {
+    recentPosts.map((post) => (
+      <li>
+        <a
+          href={`/blog/${post.slug}`}
+          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:underline"
+        >
+          {post.data.title}
+        </a>
+      </li>
+    ))
+  }
+</ul>

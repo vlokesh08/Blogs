@@ -1,0 +1,196 @@
+---
+title: Enabling Real-Time Communication in Modern Web Apps
+date: 2025-01-05
+tags: ['WebSocket', 'Http', 'QUIC']
+description: 'Different ways how we can communicate through the web apps'
+---
+
+
+Real-time communication is essential in the age of dynamic and interactive web apps. By enabling constant communication between clients and servers, concurrent connection technologies allow developers to create flexible, responsive experiences. Let’s examine some widely used techniques:
+
+## 1. WebSockets
+
+### What Are WebSockets?
+WebSockets provide a full-duplex communication channel over a single TCP connection. Once established, the connection remains open, enabling real-time, bidirectional data transfer between client and server without the overhead of HTTP requests.
+
+### Real-World Example
+- **Chat Applications:** Ideal for messaging platforms like WhatsApp or Slack, where users expect real-time message delivery.
+- **Gaming:** Multiplayer online games use WebSockets to synchronize player actions in real time.
+
+### Example Code
+**Server (Node.js with ws):**
+```javascript
+const WebSocket = require('ws');
+const server = new WebSocket.Server({ port: 8080 });
+
+server.on('connection', socket => {
+  console.log('Client connected');
+  socket.on('message', message => {
+    console.log(`Received: ${message}`);
+    socket.send(`Server response: ${message}`);
+  });
+});
+```
+
+**Client:**
+```javascript
+const socket = new WebSocket('ws://localhost:8080');
+
+socket.onopen = () => {
+  socket.send('Hello Server!');
+};
+
+socket.onmessage = event => {
+  console.log(`Message from server: ${event.data}`);
+};
+```
+
+## 2. Server-Sent Events (SSE)
+
+### What Are SSE?
+Server-Sent Events (SSE) allow servers to push updates to clients over a single HTTP connection. Unlike WebSockets, SSE is unidirectional, meaning data flows only from the server to the client.
+
+### Real-World Example
+- **Live Feeds:** News or stock market tickers can use SSE to deliver real-time updates.
+
+### Example Code
+**Server (Node.js with Express):**
+```javascript
+const express = require('express');
+const app = express();
+
+app.get('/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+
+  setInterval(() => {
+    res.write(`data: ${new Date().toISOString()}
+
+`);
+  }, 1000);
+});
+
+app.listen(8080);
+```
+
+**Client:**
+```javascript
+const eventSource = new EventSource('/events');
+
+eventSource.onmessage = event => {
+  console.log(`Update: ${event.data}`);
+};
+```
+
+## 3. HTTP Long Polling
+
+### What Is Long Polling?
+HTTP Long Polling is a technique where the client sends a request to the server, and the server holds the connection open until new data is available. Once data is sent, the client immediately re-requests to maintain the connection.
+
+### Real-World Example
+- **Basic Chat Applications:** Often used in customer support chat systems when WebSockets are unavailable.
+
+### Example Code
+**Server (Node.js with Express):**
+```javascript
+const express = require('express');
+const app = express();
+
+app.get('/poll', (req, res) => {
+  setTimeout(() => {
+    res.json({ message: 'New data available!' });
+  }, 5000);
+});
+
+app.listen(8080);
+```
+
+**Client:**
+```javascript
+const poll = () => {
+  fetch('/poll')
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      poll(); // Re-request to maintain connection
+    });
+};
+
+poll();
+```
+
+## 4. gRPC with Streams
+
+### What Is gRPC?
+gRPC is a high-performance RPC framework that supports client-streaming, server-streaming, and bidirectional-streaming over HTTP/2.
+
+### Real-World Example
+- **Microservices Communication:** Widely used for real-time communication between microservices in distributed systems.
+
+### Example Code
+**Server (Node.js with gRPC):**
+```javascript
+const grpc = require('@grpc/grpc-js');
+const protoLoader = require('@grpc/proto-loader');
+
+const packageDefinition = protoLoader.loadSync('service.proto');
+const service = grpc.loadPackageDefinition(packageDefinition);
+
+function streamUpdates(call) {
+  setInterval(() => {
+    call.write({ message: 'Server update!' });
+  }, 1000);
+}
+
+const server = new grpc.Server();
+server.addService(service.MyService.service, { streamUpdates });
+server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
+  server.start();
+});
+```
+
+## 5. QUIC Protocol
+
+### What Is QUIC?
+QUIC is a modern transport protocol built on UDP. It provides features like multiplexing, low latency, and connection migration, and forms the foundation of HTTP/3.
+
+### Real-World Example
+- **Video Streaming:** Platforms like YouTube and Netflix use QUIC for faster video delivery.
+
+### Advantages
+- Reduces latency with multiplexed streams.
+- Robust against packet loss.
+- Enables faster handshake compared to TCP.
+
+## 6. Peer-to-Peer (P2P) Connections
+
+### What Is P2P?
+P2P allows direct communication between clients, bypassing servers entirely. WebRTC is a common protocol for implementing P2P connections.
+
+### Real-World Example
+- **Video Calls:** Applications like Zoom and Google Meet use P2P for direct media transmission.
+
+### Example Code
+**Client (WebRTC):**
+```javascript
+const peer = new RTCPeerConnection();
+peer.onicecandidate = event => {
+  // Send candidate to remote peer
+};
+
+peer.ondatachannel = event => {
+  const channel = event.channel;
+  channel.onmessage = e => console.log(`Message: ${e.data}`);
+};
+
+const dataChannel = peer.createDataChannel('chat');
+dataChannel.send('Hello Peer!');
+```
+
+## Choosing the Right Technology
+
+- **Real-time messaging or gaming:** WebSockets.
+- **Unidirectional updates:** SSE or HTTP/2 Push.
+- **Microservices:** gRPC with streams.
+- **High-performance needs:** QUIC or HTTP/3.
+- **Direct peer-to-peer communication:** WebRTC.
