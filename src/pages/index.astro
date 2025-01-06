@@ -5,7 +5,6 @@ const posts = await getCollection("blog");
 ---
 
 <BaseLayout title="My Blog">
-
   <!-- Search bar section -->
   <!-- <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="relative">
@@ -24,7 +23,7 @@ const posts = await getCollection("blog");
 
   <!-- Posts section -->
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="max-w-7xl mx-auto px-2 py-4 border-b mb-4 ">
+    <div class="max-w-7xl mx-auto px-2 py-4 border-b mb-4">
       <a href="/">
         <h1 class="text-4xl font-bold">Blogs by Lokesh</h1>
       </a>
@@ -32,26 +31,45 @@ const posts = await getCollection("blog");
     <div class="space-y-8">
       {
         posts.map((post) => (
-          <article class="flex gap-7">
-            <div class="text-gray-400 mt-2">
-              {new Date(post.data.date).toLocaleDateString()}
+          <article class="flex flex-col md:flex-row gap-4 md:gap-4 p-4 md:p-3">
+            <div class="md:w-32 flex-shrink-0 pt-1">
+              {post.data.date && (
+                <time class="text-gray-500 dark:text-gray-400 text-sm md:text-base">
+                  {new Date(post.data.date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </time>
+              )}
             </div>
-            <div>
 
-            <h2 class="text-2xl font-bold dark:text-white text-gray-900 mb-2">
-              <a href={`/blog/${post.slug}`} class="hover:text-blue-400">
-                {post.data.title}
-              </a>
-            </h2>
-            {post.data.description && (
-              <p class="text-gray-400 text-lg">{post.data.description}</p>
-            )}
-            <div class="flex gap-2 mt-2">
-              {post.data.tags?.map((tag: string) => (
-                <span class="text-cyan-400 uppercase text-sm">{tag}</span>
-              ))}
+            <div class="flex-grow">
+              <h2 class="text-xl md:text-2xl font-bold dark:text-white text-gray-900 mb-2">
+                <a
+                  href={`/blog/${post.slug}`}
+                  class="hover:text-blue-400 transition-colors"
+                >
+                  {post.data.title}
+                </a>
+              </h2>
+
+              {post.data.description && (
+                <p class="text-gray-400 text-base md:text-lg mb-3">
+                  {post.data.description}
+                </p>
+              )}
+
+              {post.data.tags && post.data.tags.length > 0 && (
+                <div class="flex flex-wrap gap-2">
+                  {post.data.tags.map((tag) => (
+                    <span class="text-cyan-400 uppercase text-xs md:text-sm">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-              </div>
           </article>
         ))
       }
