@@ -19,8 +19,18 @@ const { frontmatter, headings } = Astro.props;
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Left Sidebar -->
         <aside class="lg:col-span-3 border-r dark:border-gray-700">
-          <div class="sticky top-8 pr-8">
-            <TableOfContents headings={headings} />
+          <div class="lg:sticky lg:top-8 lg:pr-8">
+            <!-- Accordion header for mobile -->
+            <button class="w-full flex items-center justify-between p-4 lg:hidden text-left font-semibold">
+              Table of Contents
+              <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <!-- Content wrapper with hidden state on mobile -->
+            <div class="hidden lg:block">
+              <TableOfContents headings={headings} />
+            </div>
           </div>
         </aside>
 
@@ -51,4 +61,14 @@ const { frontmatter, headings } = Astro.props;
       </div>
     </div>
   </div>
+  <script>
+    const accordionButton = document.querySelector('aside button');
+    const accordionContent = accordionButton?.nextElementSibling;
+    const accordionIcon = accordionButton?.querySelector('svg');
+  
+    accordionButton?.addEventListener('click', () => {
+      accordionContent?.classList.toggle('hidden');
+      accordionIcon?.classList.toggle('rotate-180');
+    });
+  </script>
 </BaseLayout>
